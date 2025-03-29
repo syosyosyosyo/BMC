@@ -1,0 +1,451 @@
+<head>
+  <meta charset="UTF-8" />
+  <title>Business Model Canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f9f9f9;
+    }
+
+    /* מצב כהה */
+    body.dark-mode {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    body.dark-mode .block {
+      background-color: #1e1e1e;
+      border-color: #444;
+      color: #f0f0f0;
+    }
+    body.dark-mode .note {
+      color: #fff;
+    }
+    body.dark-mode .btn {
+      border-color: #888;
+    }
+    body.dark-mode .form-control,
+    body.dark-mode .form-select {
+      background-color: #333;
+      color: #fff;
+      border-color: #555;
+    }
+
+    .canvas-container {
+      display: grid;
+      width: 100%;
+      max-width: 1600px;
+      margin: 10px auto;
+      grid-template-areas:
+				"key-partners key-activities key-resources value-propositions customer-relationships channels customer-segments"
+				"cost-structure cost-structure cost-structure value-propositions revenue-streams revenue-streams revenue-streams";
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      padding: 10px;
+    }
+
+    /* View Modes */
+    body.view-wide .canvas-container {
+      max-width: 1600px;
+    }
+    body.view-tablet .canvas-container {
+      max-width: 900px;
+    }
+    body.view-mobile .canvas-container {
+      max-width: 600px;
+    }
+
+
+    .block {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 6px;
+      min-height: 120px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.1);
+      font-weight: bold;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      flex-direction: column;
+    }
+    .note {
+      padding: 4px;
+      border-radius: 1px;
+      cursor: pointer;
+      margin-bottom: 1px;
+      font-weight: normal;
+    }
+    .controls {
+      margin-top: 1px;
+    }
+    .color-circle {
+      width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; display: inline-block;
+    }
+    .color-circle.selected {
+      border: 3px solid #000;
+    }
+
+    .key-partners { grid-area: key-partners; }
+    .key-activities { grid-area: key-activities; }
+    .key-resources { grid-area: key-resources; }
+    .value-propositions { grid-area: value-propositions; min-height: 250px; }
+    .customer-relationships { grid-area: customer-relationships; }
+    .channels { grid-area: channels; }
+    .customer-segments { grid-area: customer-segments; }
+    .cost-structure { grid-area: cost-structure; min-height: 150px; }
+    .revenue-streams { grid-area: revenue-streams; min-height: 150px; }
+
+    @media (max-width: 900px) {
+      .canvas-container {
+        grid-template-areas:
+			"value-propositions"
+			"key-partners"
+			"key-activities"
+			"key-resources"
+			"customer-relationships"
+			"channels"
+			"customer-segments"
+			"cost-structure"
+			"revenue-streams";
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+    <h1 class="mb-2">Business Model Canvas</h1>
+    <a href="archive.html" class="btn btn-outline-secondary mb-2">📁 View Archive</a>
+  </div>
+
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+    <div>
+      <button class="btn btn-sm btn-link" onclick="updateCompanyName()">✏️</button>
+      <strong>Company Name:</strong>
+
+      <span id="companyNameDisplay">[Click to Set]</span>
+
+    </div>
+    <div id="lastUpdated" class="text-muted"></div>
+  </div>
+
+  <hr>
+  <div class="d-flex gap-2 flex-wrap my-3">
+    <div>
+      <label class="form-label">🔍 Filter by color:</label>
+      <select id="colorFilter" class="form-select form-select-sm">
+        <option value="">Show all</option>
+        <option value="#cce5ff">Blue</option>
+        <option value="#d4edda">Green</option>
+        <option value="#f8d7da">Red</option>
+        <option value="#e2e3e5">Gray</option>
+        <option value="#fff3cd">Orange</option>
+        <option value="#ffff88">Yellow</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div id="canvas" class="canvas-container"></div>
+  <hr>
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+
+
+
+    <div class="align-self-end">
+      <button class="btn btn-outline-primary btn-sm" onclick="exportToCSV()">Export CSV</button>
+    </div>
+    <div class="mt-4">
+      <button onclick="resetCanvas()" class="btn btn-danger">Reset</button>
+    </div>
+  </div>
+</div>
+<!-- 🌐 View Mode + Dark Mode Buttons -->
+<div class="text-center my-4">
+  <div class="btn-group" role="group">
+    <button class="btn btn-outline-secondary" onclick="setViewMode('')">🖥️ Default</button>
+    <button class="btn btn-outline-secondary" onclick="setViewMode('view-wide')">💻 Wide</button>
+    <button class="btn btn-outline-secondary" onclick="setViewMode('view-tablet')">📱 Tablet</button>
+    <button class="btn btn-outline-secondary" onclick="setViewMode('view-mobile')">📳 Mobile</button>
+    <button class="btn btn-outline-dark" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+  </div>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal fade" id="noteModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h7 class="modal-title">Add</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Note Text:</label>
+        <textarea class="form-control" id="noteText" rows="4"></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Select Color:</label>
+        <div id="colorOptions"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="saveNoteBtn">Add</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- Edit Note Modal -->
+<div class="modal fade" id="editNoteModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Edit Note</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label">Note Text:</label>
+        <textarea class="form-control" id="editNoteText" rows="4"></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Select Color:</label>
+        <div id="editColorOptions"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-success" id="updateNoteBtn">Save</button>
+      <button type="button" class="btn btn-outline-warning" id="archiveNoteBtn">Archive Note</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    </div>
+  </div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const state = JSON.parse(localStorage.getItem("bmc_notes") || "{}");
+  const deleted = JSON.parse(localStorage.getItem("bmc_deleted") || "{}");
+
+  const colorChoices = {
+    Blue: '#cce5ff', Green: '#d4edda', Red: '#f8d7da',
+    Gray: '#e2e3e5', Orange: '#fff3cd', Yellow: '#ffff88'
+  };
+
+  let currentBlock = null;
+  let selectedColor = null;
+  let editIndex = null;
+
+  const companyName = localStorage.getItem("bmc_company") || "";
+  document.getElementById("companyNameDisplay").textContent = companyName || "";
+
+  function updateCompanyName() {
+    const newName = prompt("Enter new company name:", companyName);
+    if (newName) {
+      localStorage.setItem("bmc_company", newName);
+      document.getElementById("companyNameDisplay").textContent = newName;
+    }
+  }
+
+  function updateTimestamp() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = String(now.getFullYear()).slice(-2);
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const formatted = `${day}/${month}/${year} ${hours}:${minutes}`;
+    document.getElementById("lastUpdated").textContent = "Last Updated: " + formatted;
+  }
+
+
+  function saveState() {
+    localStorage.setItem("bmc_notes", JSON.stringify(state));
+    localStorage.setItem("bmc_deleted", JSON.stringify(deleted));
+    updateTimestamp();
+  }
+
+  function resetCanvas() {
+    if (confirm("Are you sure you want to CLEAR ALL DATA?")) {
+      localStorage.clear();
+      location.reload();
+    }
+  }
+
+  function render(colorFilter = "") {
+    const canvas = document.getElementById("canvas");
+    canvas.innerHTML = "";
+    const blocks = {
+      "Key Partners": "key-partners", "Key Activities": "key-activities",
+      "Key Resources": "key-resources", "Value Proposition": "🍺 value-proposition",
+      "Customer Relationships": "customer-relationships", "Channels": "channels",
+      "Customer Segments": "customer-segments", "Cost Structure": "cost-structure",
+      "Revenue Streams": "revenue-streams"
+    };
+
+    Object.entries(blocks).forEach(([name, className]) => {
+      const div = document.createElement("div");
+      div.className = `block ${className}`;
+      const title = document.createElement("div");
+      title.textContent = name;
+      div.appendChild(title);
+
+      const notes = (state[name] || []).filter(note => !colorFilter || note.color === colorFilter).sort((a, b) => (a.color || '').localeCompare(b.color || ''));
+      notes.forEach((note, index) => {
+        const noteEl = document.createElement("div");
+        noteEl.className = "note";
+        noteEl.style.backgroundColor = note.color;
+        noteEl.innerHTML = `<div>${note.text}</div><small>${note.createdAt || ""}</small>`;
+        noteEl.onclick = () => openEditModal(name, index);
+        div.appendChild(noteEl);
+      });
+
+      const controls = document.createElement("div");
+      controls.className = "controls";
+      const addBtn = document.createElement("button");
+      addBtn.className = "btn btn-sm btn-success";
+      addBtn.textContent = "+ Add";
+      addBtn.onclick = () => openAddModal(name);
+      controls.appendChild(addBtn);
+      div.appendChild(controls);
+
+      canvas.appendChild(div);
+    });
+  }
+
+  document.getElementById("colorFilter").addEventListener("change", (e) => {
+    render(e.target.value);
+  });
+
+  function exportToCSV() {
+    let csv = "Block,Text,Color,Created At\n";
+    Object.entries(state).forEach(([block, notes]) => {
+      notes.forEach(note => {
+        csv += `"${block}","${note.text}","${note.color}","${note.createdAt || ""}"\n`;
+      });
+    });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "bmc_notes.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function createColorCircles(containerId, callback) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    Object.entries(colorChoices).forEach(([name, hex]) => {
+      const circle = document.createElement("div");
+      circle.className = "color-circle";
+      circle.style.backgroundColor = hex;
+      circle.title = name;
+      circle.onclick = () => {
+        callback(hex);
+        document.querySelectorAll(`#${containerId} .color-circle`).forEach(el => el.classList.remove("selected"));
+        circle.classList.add("selected");
+      };
+      container.appendChild(circle);
+    });
+  }
+
+  function openAddModal(block) {
+    currentBlock = block;
+    selectedColor = '#cce5ff'; // Default to Blue
+
+    const noteInput = document.getElementById("noteText");
+    noteInput.value = "";
+    createColorCircles("colorOptions", color => selectedColor = color);
+
+    // Automatically select blue circle
+    setTimeout(() => {
+      const circles = document.querySelectorAll("#colorOptions .color-circle");
+      circles.forEach(c => {
+        if (c.style.backgroundColor === 'rgb(204, 229, 255)') { // #cce5ff
+          c.classList.add("selected");
+        }
+      });
+      noteInput.focus(); // place cursor in the input field
+    }, 50);
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("noteModal")).show();
+  }
+
+
+  function openEditModal(block, index) {
+    currentBlock = block;
+    editIndex = index;
+    const note = state[block][index];
+    selectedColor = note.color;
+    document.getElementById("editNoteText").value = note.text;
+    createColorCircles("editColorOptions", color => selectedColor = color);
+    bootstrap.Modal.getOrCreateInstance(document.getElementById("editNoteModal")).show();
+  }
+
+  document.getElementById("saveNoteBtn").onclick = () => {
+    const text = document.getElementById("noteText").value.trim();
+    if (!text || !selectedColor || !currentBlock) return;
+    const now = new Date();
+    const timestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const note = { text, color: selectedColor, createdAt: timestamp };
+    if (!state[currentBlock]) state[currentBlock] = [];
+    state[currentBlock].push(note);
+    saveState();
+    render();
+    bootstrap.Modal.getInstance(document.getElementById("noteModal")).hide();
+  };
+
+  document.getElementById("updateNoteBtn").onclick = () => {
+    const text = document.getElementById("editNoteText").value.trim();
+    if (!text || !selectedColor || editIndex === null) return;
+    state[currentBlock][editIndex] = { text, color: selectedColor };
+    saveState();
+    render();
+    bootstrap.Modal.getInstance(document.getElementById("editNoteModal")).hide();
+  };
+
+  document.getElementById("archiveNoteBtn").onclick = () => {
+    if (!confirm("Are you sure you want to archive this note?")) return;
+    const deletedNote = state[currentBlock].splice(editIndex, 1)[0];
+    deletedNote.deletedAt = new Date().toLocaleString();
+    if (!deleted[currentBlock]) deleted[currentBlock] = [];
+    deleted[currentBlock].push(deletedNote);
+    saveState();
+    render();
+    bootstrap.Modal.getInstance(document.getElementById("editNoteModal")).hide();
+  };
+  function setViewMode(mode) {
+    document.body.classList.remove("view-wide", "view-tablet", "view-mobile");
+    if (mode) {
+      document.body.classList.add(mode);
+    }
+    localStorage.setItem("view_mode", mode);
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    localStorage.setItem("dark_mode", isDark ? "true" : "false");
+  }
+
+  // Apply saved view mode + dark mode on load
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedViewMode = localStorage.getItem("view_mode");
+    if (savedViewMode) {
+      document.body.classList.add(savedViewMode);
+    }
+
+    const savedDark = localStorage.getItem("dark_mode");
+    if (savedDark === "true") {
+      document.body.classList.add("dark-mode");
+    }
+  });
+
+
+  updateTimestamp();
+  render();
+</script>
+</body>
+</html>
