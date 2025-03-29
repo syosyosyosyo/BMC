@@ -1,4 +1,4 @@
-﻿# 📊 Business Model Canvas (BMC) Web App
+![image](https://github.com/user-attachments/assets/dc56118a-743c-456f-b31f-365bb63441f3)﻿# 📊 Business Model Canvas (BMC) Web App
 
 A simple, interactive web-based **Business Model Canvas** tool to plan and organize business ideas. Built using HTML, JavaScript, and Bootstrap with local storage support — no backend needed!
 
@@ -29,16 +29,6 @@ Download and put both files in the same folder.
    - Edit or archive notes
 
 4. View archived notes via `archive.html`.
-
----
-
-
-## 🖼️ Screenshot Preview
-
-![Main Screen]
-
-
-![Archive]
 
 ---
 
