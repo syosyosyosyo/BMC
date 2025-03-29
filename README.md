@@ -18,7 +18,7 @@ A simple, interactive web-based **Business Model Canvas** tool to plan and organ
 
 ## 🚀 Usage
 
-1. Clone or download the repo:
+1. Download the repo:
 Download and put both files in the same folder. 
 
 2. Open `index.html` in your browser.
