@@ -16,14 +16,6 @@ A simple, interactive web-based **Business Model Canvas** tool to plan and organ
 
 ---
 
-## 📂 File Structure
-
-bmc-web-app/
-├── index.html        # Main Business Model Canvas editor
-├── archive.html      # Archived notes view
-├── README.md         # This file
-└── LICENSE           # MIT license
-
 ## 🚀 Usage
 
 1. Clone or download the repo:
